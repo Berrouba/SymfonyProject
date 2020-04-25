@@ -1,0 +1,30 @@
+
+{% extends 'base.html.twig' %}
+  
+   
+{% block body %}
+<h1>Détails du livre : {{ books.id }}</h1>
+<table class="table">
+<th> Propriété </th>
+<th> Valeur </th>
+  
+
+<tr>
+  <td>Titre </td>
+  <td>{{ books.title}}</td> 
+</tr>
+<tr>
+  <td>Prix : </td>
+  <td>{{ books.price}}</td>
+</tr>
+<tr>
+  <td>Author : </td>
+  <td>{{ books.author}}</td>
+</tr>
+<tr>
+<td>Categorie :</td>
+<td>{{books.category.name}}</td>
+</tr>
+</table>
+
+{% endblock%}
