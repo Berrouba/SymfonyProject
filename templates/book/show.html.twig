@@ -3,28 +3,33 @@
   
    
 {% block body %}
-<h1>Détails du livre : {{ books.id }}</h1>
-<table class="table">
-<th> Propriété </th>
-<th> Valeur </th>
-  
+<center><h1  style="color: Navy">Détails du livre : {{ books.id }}</h1></center>
+<div class="row">
+<div class="col-md-8">
+<table class="table table-striped">
+                                        
+
 
 <tr>
-  <td>Titre </td>
+  <td  style="color: Navy">Titre :</td>
   <td>{{ books.title}}</td> 
 </tr>
 <tr>
-  <td>Prix : </td>
+  <td  style="color: Navy">Prix : </td>
   <td>{{ books.price}}</td>
 </tr>
 <tr>
-  <td>Author : </td>
+  <td  style="color: Navy">Author : </td>
   <td>{{ books.author}}</td>
 </tr>
 <tr>
-<td>Categorie :</td>
+<td  style="color: Navy">Categorie :</td>
 <td>{{books.category.name}}</td>
 </tr>
+<tr>
+<td  style="color: Navy"> Image :</td>
+<td><img src="{{ asset('uploads/images/' ~ books.image) }}" height="130" width="200"></td>
+</tr>
 </table>
-
+</div></div>
 {% endblock%}

@@ -2,9 +2,19 @@
 
 namespace App\Controller;
 use App\Entity\Book;
+use App\Entity\Category;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\BookRepository;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class BookController extends AbstractController
 {
@@ -73,5 +83,94 @@ class BookController extends AbstractController
         $em->flush();
         return $this->redirectToRoute('book.list');
     }
+
+    
+
+    /**
+     * @Route("/formadd", name="book_formadd")
+     */
+    public function formadd(Request $request)
+    {
+        $book=new Book();
+
+        $form = $this->createFormBuilder($book)
+            ->add('title', TextType::class)
+            ->add('price', IntegerType::class)
+            ->add('Author', TextType::class)
+            ->add('category', EntityType::class, [
+                // looks for choices from this entity
+                'class' => Category::class,
+
+                // uses the User.username property as the visible option string
+                //'choice_label' => 'name',
+                'choice_label' => 'name',
+                // used to render a select box, check boxes or radios
+                // 'multiple' => true,
+                // 'expanded' => true,
+            ])
+            ->add('image', FileType::class, [
+                'label' => 'Image',
+
+                // unmapped means that this field is not associated to any entity property
+                'mapped' => false,
+
+                // make it optional so you don't have to re-upload the PDF file
+                // every time you edit the Product details
+                'required' => false,
+
+                // unmapped fields can't define their validation using annotations
+                // in the associated entity, so you can use the PHP constraint classes
+                'constraints' => [
+                    new File([
+                        'maxSize' => '2048k',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                        ],
+                        'mimeTypesMessage' => 'Svp choisir un fichier de type jpeg ou png',
+                    ])
+                ],
+            ])
+
+            ->add('save', SubmitType::class, ['label' => 'Create'])
+            ->getForm();
+
+            $form->handleRequest($request);
+            if ($form->isSubmitted() && $form->isValid()) {
+                
+                ///////////////////////////////////////////////////
+                /** @var UploadedFile $brochureFile */
+                $brochureFile = $form->get('image')->getData();
+                var_dump($brochureFile);
+                if ($brochureFile) {
+                    $originalFilename = pathinfo($brochureFile->getClientOriginalName(), PATHINFO_FILENAME);
+                    // this is needed to safely include the file name as part of the URL
+                    $safeFilename = $originalFilename;
+                    $newFilename = $safeFilename . '-' . uniqid() . '.' . $brochureFile->guessExtension();
+    
+                    // Move the file to the directory where brochures are stored
+                    try {
+                        $brochureFile->move(
+                            $this->getParameter('image_directory'),
+                            $newFilename
+                        );
+                    } catch (FileException $e) {
+                        // ... handle exception if something happens during file upload
+                    }
+                    $book->setImage($newFilename);
+            }
+
+             $entityManager = $this->getDoctrine()->getManager();
+             $entityManager->persist($book);
+             $entityManager->flush();
+ 
+             return $this->redirectToRoute('book.list');
+         }
+
+        return $this->render('book/formadd.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
 
 }

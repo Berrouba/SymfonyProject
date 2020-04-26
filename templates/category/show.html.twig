@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+   <center> <h2  style="color: Navy">List of books of this category</h2></center>
+    <div class="container">
+       <table class="table table-striped">
+           <thead class="thead-inverse">
+               <tr>
+                   <th  style="color: Navy">ID</th>
+                   <th  style="color: Navy">Title</th>
+                   <th  style="color: Navy">PRIX</th>
+                   <th  style="color: Navy">Détail </th>
+               </tr>
+               </thead>
+               <tbody>
+               {% for p in category.books %}
+                   <tr>
+                       <td scope="row">{{ p.id }} </td>
+                       <td>{{ p.title }}</td>
+                       <td>{{ p.price }}</td>
+
+                      <td> <a name="" id="" class="btn btn-primary" href="{{path('book.show',{'id': p.id})}}" role="button">détail</a></td>
+                   </tr>
+                {% endfor %}   
+
+               </tbody>
+       </table>
+       </div>
+
+    <hr/>
+    <h3><a href="{{ path('category_index') }}">Back to list</a></h3>
+{% endblock %}
