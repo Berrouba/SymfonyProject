@@ -16,6 +16,10 @@
     <link rel="stylesheet" href="{{asset('MonTemplate/css/flaticon.css')}}">
     <link rel="stylesheet" href="{{asset('MonTemplate/css/icomoon.css')}}">
     <link rel="stylesheet" href="{{asset('MonTemplate/css/style.css')}}">
+
+
+
+    
   </head>
   <body>
 
@@ -51,9 +55,30 @@
 	      <div class="collapse navbar-collapse" id="ftco-nav">
 	        <ul class="navbar-nav mr-auto">
 	        	<li class="nav-item active"><a href="{{ path('book.index')}}" class="nav-link">Home</a></li>
-	        	<li class="nav-item"><a href="{{path('book_formadd')}}" class="nav-link">Create Book</a></li>
 				<li class="nav-item"><a href="{{ path('book.list')}}" class="nav-link">Books</a></li>
 				<li class="nav-item"><a href="{{path('category_index')}}" class="nav-link">Category</a></li>
+
+				<li class="nav-item"><a href="{{path('registration_new')}}" class="nav-link">Enrollment</a></li>
+
+        {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ path('app_login')}}">Login</a>
+          </li>
+          {% endif %}
+          {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+             <li class="nav-item">
+          <a href="{{path('book_formadd')}}" class="nav-link">Create Book</a>
+          </li>
+           <li class="nav-item">
+            <a class="nav-link" href="{{ path('app_logout')}}">Logout</a>
+         
+          </li>
+           <li class="nav-item">
+            <span class="nav-link" >Vous êtes: {{ app.user.firstName }}</span>
+          </li>
+       
+
+            {% endif %}
 
 	      
 	        </ul>

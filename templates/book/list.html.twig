@@ -9,10 +9,11 @@
 <div class="col-3">
 <div class="card">
 <div class="card-body">
-  Identity : {{ p.id}}<br>
+<img src="{{ asset('uploads/images/' ~ p.image) }}" height="130" width="200">
+ 
   Title : {{ p.title}}<br>
   Price : {{ p.price}}<br>
-  <a href="{{ path('book.show',{'id': p.id })}}">Voir Détails</a>
+  <center><a href="{{ path('book.show',{'id': p.id })}}" class="btn btn-primary"> Details</a></center>
 </div>
 </div>
 <br>

@@ -16,6 +16,8 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 class BookController extends AbstractController
 {
   
@@ -44,6 +46,7 @@ class BookController extends AbstractController
         $books=$this->getDoctrine()->getRepository(Book::class)->findAll();
         return $this->render('book/list.html.twig', [
             'books' => $books,
+            
         ]);
     }
 
@@ -54,7 +57,8 @@ class BookController extends AbstractController
     {
         
         $books=$this->getDoctrine()->getRepository(Book::class)->find($id);
-      
+       // $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
         if (!$books) {
             throw $this->createNotFoundException(
                 'Le livre de id :   '.$id. 'est inexistant...'
@@ -84,7 +88,10 @@ class BookController extends AbstractController
         return $this->redirectToRoute('book.list');
     }
 
-    
+     
+
+
+
 
     /**
      * @Route("/formadd", name="book_formadd")
@@ -92,11 +99,33 @@ class BookController extends AbstractController
     public function formadd(Request $request)
     {
         $book=new Book();
-
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $user = $this->getUser(); 
         $form = $this->createFormBuilder($book)
-            ->add('title', TextType::class)
-            ->add('price', IntegerType::class)
-            ->add('Author', TextType::class)
+            ->add('title', TextType::class , [
+                'attr'=>[
+                    'placeholder' => 'Your title..',
+                    'style' =>'width: 100%; padding: 12px 20px;
+                    margin: 8px 0; display: inline-block; border: 1px solid #ccc;
+                     border-radius: 4px; box-sizing: border-box;'
+                ]
+            ])
+            ->add('price', IntegerType::class , [
+                'attr'=>[
+                    'placeholder' => 'Your price..',
+                    'style' =>'width: 100%; padding: 12px 20px;
+                    margin: 8px 0; display: inline-block; border: 1px solid #ccc;
+                     border-radius: 4px; box-sizing: border-box;'
+                ]
+            ])
+            ->add('Author', TextType::class,  [
+                'attr'=>[
+                    'placeholder' => 'Your author..',
+                    'style' =>'width: 100%; padding: 12px 20px;
+                    margin: 8px 0; display: inline-block; border: 1px solid #ccc;
+                     border-radius: 4px; box-sizing: border-box;'
+                ]
+            ])
             ->add('category', EntityType::class, [
                 // looks for choices from this entity
                 'class' => Category::class,
@@ -132,7 +161,7 @@ class BookController extends AbstractController
                 ],
             ])
 
-            ->add('save', SubmitType::class, ['label' => 'Create'])
+            
             ->getForm();
 
             $form->handleRequest($request);
@@ -169,8 +198,98 @@ class BookController extends AbstractController
 
         return $this->render('book/formadd.html.twig', [
             'form' => $form->createView(),
+            'book' => $book,'firstname'=>$user->getUsername(),
+            'txtbtn'=>'Create Book'
         ]);
     }
 
+
+
+
+/**
+ * @Route("/update/{id}", name="book_update")
+ */
+
+    public function update(Book $book, Request $request)
+    {
+            $form = $this->createFormBuilder($book)
+            ->add('title', TextType::class , [
+                'attr'=>[
+                    'style' =>'width: 100%; padding: 12px 20px;
+                    margin: 8px 0; display: inline-block; border: 1px solid #ccc;
+                     border-radius: 4px; box-sizing: border-box;'
+                ]
+            ])
+            ->add('price', IntegerType::class , [
+                'attr'=>[
+                    
+                    'style' =>'width: 100%; padding: 12px 20px;
+                    margin: 8px 0; display: inline-block; border: 1px solid #ccc;
+                     border-radius: 4px; box-sizing: border-box;'
+                ]
+            ])
+            ->add('Author', TextType::class ,  [
+                'attr'=>[
+                    'style' =>'width: 100%; padding: 12px 20px;
+                    margin: 8px 0; display: inline-block; border: 1px solid #ccc;
+                     border-radius: 4px; box-sizing: border-box;'
+                ]
+            ])
+            ->add('category', EntityType::class, [
+                
+                'class' => Category::class,
+                'choice_label' => 'name',
+            ])
+            ->add('image', FileType::class, [
+                'label' => 'Image',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '2048k',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                        ],
+                        'mimeTypesMessage' => 'Svp choisir un fichier de type jpeg ou png',
+                    ])
+                ],
+            ])
+
+            ->getForm();
+
+            $form->handleRequest($request);
+            if ($form->isSubmitted() && $form->isValid()) {
+                
+                ///////////////////////////////////////////////////
+                /** @var UploadedFile $brochureFile */
+                $brochureFile = $form->get('image')->getData();
+                var_dump($brochureFile);
+                if ($brochureFile) {
+                    $originalFilename = pathinfo($brochureFile->getClientOriginalName(), PATHINFO_FILENAME);
+                    // this is needed to safely include the file name as part of the URL
+                    $safeFilename = $originalFilename;
+                    $newFilename = $safeFilename . '-' . uniqid() . '.' . $brochureFile->guessExtension();
+                        try {
+                        $brochureFile->move(
+                            $this->getParameter('image_directory'),
+                            $newFilename
+                        );
+                    } catch (FileException $e) {
+                    }
+                    $book->setImage($newFilename);
+            }
+
+             $entityManager = $this->getDoctrine()->getManager();
+             $entityManager->flush();
+ 
+             return $this->redirectToRoute('book.list');
+         }
+
+        return $this->render('book/formadd.html.twig', [
+            'form' => $form->createView(),
+            'txtbtn'=>'Update Book'
+        ]);
+    }
 
 }
